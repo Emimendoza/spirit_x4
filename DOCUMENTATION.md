@@ -1181,3 +1181,52 @@ int main()
 ---
 
 *Documentation generated from the header files in `include/boost/spirit/x4/`.*
+
+---
+
+## Compiler Requirements
+
+This library requires **C++23** features including deducing `this` (P0847R7), `std::print`, and `std::ranges`. Verified compilers:
+
+- **GCC 14** (`g++-14 -std=c++23`) — fully supported; used in the library's own CI
+- **Clang 18** (`clang++ -std=c++23`) — compiles and runs correctly for typical usage
+- **Clang 21** (`clang++-21 -std=c++23`) — required by the library's CI for full test suite coverage
+- **MSVC 2022** (`/std:c++23preview`) — supported in CI
+
+GCC 13 does **not** support deducing `this` and cannot compile this library.
+
+---
+
+## Practical Notes on Attribute Types
+
+When writing grammars with semantic actions, `x4::_attr(ctx)` returns the **raw** Boost.Fusion sequence produced by the parser — not automatically-flattened types. Key implications:
+
+1. **`lexeme[char >> *char]`** produces `boost::fusion::deque<char, std::string>`, **not** `std::string`.  
+   Wrap in a typed rule (`x4::rule<C, std::string>`) to get automatic container flattening.
+
+2. **`parserA | parserB`** where both produce `std::string` still produces `boost::variant<std::string, std::string>` — **not** `std::string` — unless wrapped in a typed rule.
+
+3. Fusion sequence elements must be accessed with **`boost::fusion::at_c<N>(attr)`**, not C++ structured bindings.
+
+4. Self-closing (`<br/>`) and full (`<tag>…</tag>`) element alternatives must produce **identical attribute type sequences** to avoid a sequence-size static assertion failure.
+
+---
+
+## Example: Minimal XML Parser
+
+A working XML parser is provided in [`examples/xml_parser/xml_parser.cpp`](examples/xml_parser/xml_parser.cpp). It demonstrates:
+
+- Named rules with `BOOST_SPIRIT_X4_DEFINE` for mutual recursion (element ↔ content)
+- Typed helper rules to produce predictable attribute types
+- Semantic actions that use `boost::fusion::at_c` to read Fusion sequence attributes
+- A phrase-parse skipper combining `space`, comments (`<!-- ... -->`), and processing instructions (`<?...?>`)
+- `boost::variant` + `boost::recursive_wrapper` for the recursive AST content type
+
+**Build:**
+
+```sh
+g++-14 -std=c++23 -I include -I /usr/include \
+        examples/xml_parser/xml_parser.cpp -o xml_parser
+./xml_parser
+```
+
