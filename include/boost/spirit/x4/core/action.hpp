@@ -10,6 +10,7 @@
 =============================================================================*/
 
 #include <boost/spirit/config.hpp>
+#include <boost/spirit/x4/core/parser.hpp>
 #include <boost/spirit/x4/core/context.hpp>
 #include <boost/spirit/x4/core/action_context.hpp>
 

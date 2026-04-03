@@ -10,7 +10,7 @@
 ==============================================================================*/
 
 #include <boost/spirit/config.hpp>
-#include <boost/spirit/x4/core/action.hpp>
+#include <boost/spirit/x4/parse.hpp>
 #include <boost/spirit/x4/auxiliary.hpp>
 #include <boost/spirit/x4/char.hpp>
 #include <boost/spirit/x4/directive.hpp>
